@@ -1,0 +1,791 @@
+<template>
+    <el-table :data="roles" header-row-class-name="thead-light" style="width: 100%">
+      <!-- ACTIVACION BOTON VENTANA MODAL -->
+      <el-table-column prop="display_name" label="Nombre del Rol" min-width="130"></el-table-column>
+      <el-table-column prop="name" label="Permisos Asignados" min-width="130">
+        <template v-slot="{ row }">
+          <a v-bind:href="row.url" target="_blank">
+            <!-- Modals -->
+            <div class="row">
+              <div class="col-8 text-right">
+                <base-button class="btn btn-icon btn-primary" @click="modals.modal1 = true">
+                  Ver Permisos
+                  <span class="btn-inner--icon">
+                    <i class="fa fa-bicycle"></i>
+                  </span>
+                </base-button>
+                <modal :show.sync="modals.modal1">
+                  <h6 slot="header" class="modal-title" id="modal-title-default">Permisos del Rol:</h6>
+
+                  <div v-if="groupRoles.length">
+                    <div v-for="(roli, index) in groupRoles" :key="index">
+                      <el-table :data="roli.perms" header-row-class-name="thead-light" style="width: 100%">
+                        <el-table-column label="Permisos" prop="permissions" sortable>
+                          <template v-slot="{ row }">
+                            <b>{{ row.display_name }}</b>
+                          </template>
+                        </el-table-column>
+                      </el-table>
+                    </div>
+                  </div>
+
+                  <template slot="footer">
+                    <base-button type="link" class="ml-auto" @click="modals.modal1 = false"
+                      >Close</base-button
+                    >
+                  </template>
+                </modal>
+              </div>
+            </div>
+          </a>
+        </template>
+      </el-table-column>
+      <!-- ACTIVACION TOOGLE BUTTONS -->
+      <el-table-column prop="name" label="Activar" min-width="100">
+        <template v-slot="{ row }">
+          <a v-bind:href="row.url" target="_blank">
+            <label class="custom-toggle">
+              <input type="checkbox" checked />
+              <span class="custom-toggle-slider rounded-circle" data-label-off="No" data-label-on="Si"></span>
+            </label>
+          </a>
+        </template>
+      </el-table-column>
+    </el-table>
+  </template>
+
+  <template>
+  <div>
+    <div :style="{ borderBottom: '1px solid #E9E9E9' }">
+      <a-checkbox :indeterminate="indeterminate" @change="onCheckAllChange" :checked="checkAll">
+        Check all
+      </a-checkbox>
+    </div>
+    <br />
+    <a-checkbox-group :options="plainOptions" v-model="checkedList" @change="onChange" />
+  </div>
+</template>
+<script>
+  const plainOptions = ['Apple', 'Pear', 'Orange'];
+  const defaultCheckedList = ['Apple', 'Orange'];
+  export default {
+    data() {
+      return {
+        checkedList: defaultCheckedList,
+        indeterminate: true,
+        checkAll: false,
+        plainOptions,
+      };
+    },
+    methods: {
+      onChange(checkedList) {
+        this.indeterminate = !!checkedList.length && checkedList.length < plainOptions.length;
+        this.checkAll = checkedList.length === plainOptions.length;
+      },
+      onCheckAllChange(e) {
+        Object.assign(this, {
+          checkedList: e.target.checked ? plainOptions : [],
+          indeterminate: false,
+          checkAll: e.target.checked,
+        });
+      },
+    },
+  };
+</script>
+-----------------------
+<template>
+  <div>
+    <div :style="{ borderBottom: '1px solid #E9E9E9' }">
+      <a-checkbox :indeterminate="indeterminate" @change="onCheckAllChange" :checked="checkAll">
+        Check all
+      </a-checkbox>
+    </div>
+    <br />
+    <a-checkbox-group :options="plainOptions" v-model="checkedList" @change="onChange" />
+  </div>
+</template>
+<script>
+  const plainOptions = ['Apple', 'Pear', 'Orange'];
+  const defaultCheckedList = ['Apple', 'Orange'];
+  export default {
+    data() {
+      return {
+        checkedList: defaultCheckedList,
+        indeterminate: true,
+        checkAll: false,
+        plainOptions,
+      };
+    },
+    methods: {
+      onChange(checkedList) {
+        this.indeterminate = !!checkedList.length && checkedList.length < plainOptions.length;
+        this.checkAll = checkedList.length === plainOptions.length;
+      },
+      onCheckAllChange(e) {
+        Object.assign(this, {
+          checkedList: e.target.checked ? plainOptions : [],
+          indeterminate: false,
+          checkAll: e.target.checked,
+        });
+      },
+    },
+  };
+</script>
+-------!!!!!!------------------------
+<template>
+  <v-layout row wrap>
+
+      <v-flex xs6>
+          <v-text-field
+                  append-icon="search"
+                  label="Filter"
+                  single-line
+                  hide-details
+                  @input="filterSearch"
+          ></v-text-field>
+      </v-flex>
+
+      <v-flex xs6>
+          <v-select
+                  :items="authors"
+                  label="Author"
+                  @change="filterAuthor"
+          ></v-select>
+      </v-flex>
+
+
+      <v-flex xs12>
+
+
+          <v-data-table
+                  :headers="headers"
+                  :items="rows"
+                  item-key="name"
+
+                  :search="filters"
+                  :custom-filter="customFilter"
+          >
+              <template slot="headers" slot-scope="props">
+                  <tr>
+                      <th v-for="header in props.headers" :key="header.text">
+                          {{ header.text }}
+                      </th>
+                  </tr>
+              </template>
+
+              <template slot="items" slot-scope="props">
+                  <tr>
+                      <td>{{ props.item.name }}</td>
+                      <td>{{ props.item.added_by }}</td>
+                  </tr>
+              </template>
+
+          </v-data-table>
+
+      </v-flex>
+
+  </v-layout>
+</template>
+
+<script>
+
+  export default {
+    data: () => ({
+      filters: {
+        search: '',
+        added_by: '',
+      },
+
+      authors: ['Admin', 'Editor'],
+      headers: [
+        {
+          text: 'Names',
+          align: 'left',
+          value: 'name',
+          sortable: false
+        },
+        {
+          text: 'Item addad by',
+          value: 'added_by',
+          align: 'left',
+          sortable: false
+        }
+      ],
+      rows: [
+        {
+          name: 'Marcelo Tosco',
+          added_by: 'admin'
+        },
+        {
+          name: 'Carlos Campos',
+          added_by: 'admin'
+        },
+        {
+          name: 'Luis Gonzalez',
+          added_by: 'Editor'
+        },
+        {
+          name: 'Keopx',
+          added_by: 'Editor'
+        },
+        {
+          name: 'Marco Marocchi',
+          added_by: 'Admin'
+        },
+
+      ]
+    }),
+
+    methods: {
+
+      customFilter(items, filters, filter, headers) {
+        // Init the filter class.
+        const cf = new this.$MultiFilters(items, filters, filter, headers);
+
+        cf.registerFilter('search', function (searchWord, items) {
+          if (searchWord.trim() === '') return items;
+
+          return items.filter(item => {
+            return item.name.toLowerCase().includes(searchWord.toLowerCase());
+          }, searchWord);
+
+        });
+
+
+        cf.registerFilter('added_by', function (added_by, items) {
+          if (added_by.trim() === '') return items;
+
+          return items.filter(item => {
+            return item.added_by.toLowerCase() === added_by.toLowerCase();
+          }, added_by);
+
+        });
+        // Its time to run all created filters.
+        // Will be executed in the order thay were defined.
+        return cf.runFilters();
+      },
+      /**
+       * Handler when user input something at the "Filter" text field.
+       */
+      filterSearch(val) {
+        this.filters = this.$MultiFilters.updateFilters(this.filters, {search: val});
+      },
+      /**
+       * Handler when user  select some author at the "Author" select.
+       */
+      filterAuthor(val) {
+        this.filters = this.$MultiFilters.updateFilters(this.filters, {added_by: val});
+      },
+    }
+  };
+</script>
+
+ <!-- BOTON EDITAR ROL-->
+ <el-table-column prop="name" label="Accion" min-width="100">
+  <template v-slot="{ row }">
+    <a v-bind:href="row.url" target="_blank">
+      <div class="row">
+        <div class="col-8 text-right">
+          <base-button class="btn btn-icon btn-warning" @click="modals.modal2 = true">
+            Editar
+            <span class="btn-inner--icon">
+              <i class="ni ni-atom"></i>
+            </span>
+          </base-button>
+          <modal :show.sync="modals.modal2">
+            <h6 slot="header" class="modal-title" id="modal-title-default">
+              Rol: {{ row.display_name }}
+            </h6>
+            <div v-if="groupRoles.length">
+              <div v-for="(roli, index) in groupRoles" :key="index">
+                <el-table :data="roli.perms" header-row-class-name="thead-light" style="width: 100%">
+                  <el-table-column label="Permisos" prop="permissions" sortable>
+                    <template v-slot="{ row }">
+                      <b>{{ row.display_name }}</b>
+                    </template>
+                  </el-table-column>
+                  <!-- ACTIVACION TOOGLE BUTTONS MODAL -->
+                  <el-table-column prop="cheked" label="Activar" min-width="100">
+                    <template v-slot="{ row }">
+                      <a v-bind:href="row.url" target="_blank">
+                        <label class="custom-toggle">
+                          <input type="checkbox" v-model="roli.perms" :value="index" />
+
+                          <span
+                            class="custom-toggle-slider rounded-circle"
+                            data-label-off="No"
+                            data-label-on="Si"
+                          ></span>
+                        </label>
+                      </a>
+                      {{ checked }}
+                    </template>
+                  </el-table-column>
+                  <!--FIN TOOGLE BUTTONS MODAL -->
+                </el-table>
+              </div>
+            </div>
+            <template slot="footer">
+              <base-button type="submit" class="btn btn-primary">
+                Guardar
+              </base-button>
+              <base-button type="link" class="ml-auto" @click="modals.modal2 = false"
+                >Close</base-button
+              >
+            </template>
+          </modal>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-danger">
+        <span class="glyphicon glyphicon-search"></span> Eliminar
+      </button>
+    </a>
+  </template>
+</el-table-column>
+
+<form :data="roles" header-row-class-name="thead-light">
+  <div class="form-group">
+    <label>name </label>
+    <input prop="name" type="text" class="form-control" />
+  </div>
+  <div class="form-group">
+    <label>display_name</label>
+    <input type="text" class="form-control" id="exampleInputPassword1" />
+  </div>
+  <div class="form-group">
+    <label>permissions</label>
+    <input type="text" class="form-control" id="exampleInputPassword1" />
+  </div>
+</form>
+-----------------------
+
+<el-table-column min-width="180px" align="center">
+  <div slot-scope="{ row }" class="table-actions">
+    <a
+      href="#!"
+      @click.prevent="onView(row)"
+      class="table-action table-dark-accent-bg"
+      data-toggle="tooltip"
+      data-original-title="Ver usuario"
+    >
+      <i class="fas fa-eye text-success"></i>
+    </a>
+    <a
+      href="#!"
+      @click.prevent.prevent="onEdit(row)"
+      class="table-action"
+      data-toggle="tooltip"
+      data-original-title="Editar usuario"
+    >
+      <i class="fas fa-user-edit text-default"></i>
+    </a>
+
+    <a
+      href="#!"
+      @click.prevent.prevent="onDelete(row)"
+      class="table-action table-action-delete"
+      data-toggle="tooltip"
+      data-original-title="Eliminar usuario"
+    >
+      <i class="fas fa-trash text-danger"></i>
+    </a>
+  </div>
+</el-table-column>
+
+-----------------------
+<div v-if="groupRoles.length">
+  <div v-for="(roli, index) in groupRoles" :key="index">
+    <el-table :data="roli.perms" header-row-class-name="thead-light" style="width: 100%">
+      <el-table-column label="Permisos" prop="permissions" sortable>
+        <template v-slot="{ row }">
+          <b>{{ row.display_name }}</b>
+        </template>
+      </el-table-column>
+      <!-- ACTIVACION TOOGLE BUTTONS MODAL -->
+      <el-table-column prop="cheked" label="Activar" min-width="100">
+        <template v-slot="{ row }">
+          <a v-bind:href="row.url" target="_blank">
+            <label class="custom-toggle">
+              <input type="checkbox" v-model="roli.perms" :value="index" />
+
+              <span
+                class="custom-toggle-slider rounded-circle"
+                data-label-off="No"
+                data-label-on="Si"
+              ></span>
+            </label>
+          </a>
+          {{ checked }}
+        </template>
+      </el-table-column>
+      <!--FIN TOOGLE BUTTONS MODAL -->
+    </el-table>
+  </div>
+</div>
+-----------------------
+modal 
+<modal :show.sync="modal1">
+  <h6 slot="header" class="modal-title" id="modal-title-default">{{ row.display_name }}</h6>
+  {{ row.permissions }}
+  <template slot="footer">
+    <base-button type="primary">Save changes</base-button>
+    <base-button type="link" class="ml-auto" @click="modal1 = false">Close </base-button>
+  </template>
+</modal>
+
+
+-----------------------
+ <!-- BOTONES DE ACCION EDITAR y ELIMINAR -->
+ <el-table-column prop="name" label="Accion" min-width="100">
+  <template v-slot="{ row }">
+    <a v-bind:href="row.url" target="_blank">
+      <!--------------------- EDITAR ROL  ------------------->
+      <div class="row">
+        <base-button type="button" class="btn btn-warning" @click="modal2 = true">
+          Editar
+          <span class="btn-inner--icon"> </span>
+        </base-button>
+        <modal :show.sync="modal2">
+          <div>
+            <h6 slot="header" class="modal-title" id="modal-title-default">
+              Editar Rol:{{ row.display_name }}
+            </h6>
+            <br />
+            <h2>Id: {{ row.id }}</h2>
+            <template>
+              <form>
+                <div>
+                  <label>name: {{ row.name }} </label>
+                  <input prop="row.name" type="text" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>display_name</label>
+                  <input prop="display_name" type="text" class="form-control" />
+                </div>
+                <div class="form-group">
+                  <label>permissions</label>
+                  <input prop="permissions" :class="index" type="text" class="form-control" />
+                </div>
+              </form>
+            </template>
+          </div>
+
+          <template slot="footer">
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+            <base-button type="link" class="ml-auto" @click="modal2 = false">Close</base-button>
+          </template>
+        </modal>
+      </div>
+      <!--------------------- ELIMINAR ROL  ------------------->
+      <button type="button" class="btn btn-danger">
+        <span class="glyphicon glyphicon-search"></span> Eliminar
+      </button>
+    </a>
+  </template>
+</el-table-column>
+<!-- PRueba Modals
+          <template>
+            <div class="row">
+              <div class="col-md-4">
+                <base-button block type="primary" class=" mb-3" @click="modal3 = true">
+                  Prueba
+                </base-button>
+                <modal :show.sync="modal3">
+                  <h6 slot="header" class="modal-title" id="modal-title-default">Type your modal title</h6>
+
+                  <template slot="footer">
+                    <base-button type="primary">Save changes</base-button>
+                    <base-button type="link" class="ml-auto" @click="modal3 = false">Close </base-button>
+                  </template>
+                </modal>
+              </div>
+            </div>
+          </template>
+           fin de prueba -->
+
+           -----------------------
+           <template>    
+            <el-table :data="permisos" style="width:100%">    
+   <el-table-column prop="id" label="日期" width="180" >
+   </el-table-column>
+   <el-table-column prop="name" label="姓名" width="180" v-if="showAddress">
+   </el-table-column>
+   <el-table-column prop="display name" label="地址" v-if="!showAddress">
+   </el-table-column>
+ </el-table>
+</template>
+       </template>
+
+       select() {
+        this.selected = [];
+              if (!this.selectAll) {
+                  for (let row in this.permisos) {
+                      this.selected.push(this.permisos[row].id);
+          }
+        }
+      }
+      -----metodos API-------
+      ////MIS METODOS CRUD ROLES Y PERMISOS/////
+
+      //-----------AGREGADA ROLES----------------/////////
+ /*     public function storePermission(Request $request)
+      {
+         // Prospectos user data
+         $rolePermission = PermissionRole::storePermission([
+          'name' => $request->name,
+          'display_name'=> $request->display_name,
+          'status' => $request->status
+      ]);
+     // return response()->json(compact('token', 'user'));
+     return response()->json(compact('data', 'status'));
+       }
+   //--------------FIN  de AGREGADA-------------///////
+   ///creacion de rol////
+   public function storeCreate2(Request $request){
+       $this->validate($request, [
+           'name'=> 'required',
+           'display_name' => 'required'
+       ]);
+       Role::create($request->all());
+       return;
+     }*/
+    public function storeCreate(Request $request){
+       $roles = Role::create([
+           'name' => $request->name,
+           'display_name' => $request->display_name
+       ]);
+           return response()->json(compact('data', 'status'));
+    }
+    //DELETE
+    public function destroy($id){
+       $roles = Role::find($id);
+       // dd($id, $formatos);
+        $roles->delete();
+        $data = Role::where('id')->get();
+        $status = 'success';
+
+        return response()->json(compact('data','status'));
+    }
+
+  //elimina Todos lo Roles de un alon
+   public function deleteRol(Request $request){
+       Role::where($request->id)->delete();
+       return Reply::dataOnly(['status' => 'success']);
+   }
+      
+
+   -------------------
+   <template>
+    <div id="card" class="card card-profile">
+      <div class="card-header text-center border-0 pt-8 pt-md-2 pb-0 pb-md-2">
+        <div class="d-flex justify-content-between"></div>
+      </div>
+  
+      <div class="card-body pt-0">
+        <h6 slot="header" class="modal-title" id="modal-title-default">
+          Rol :{{ role.display_name }}
+          <!-- <button type="button" data-dismiss="modal1" aria-label="Close" class="close"><span>×</span></button> -->
+        </h6>
+        <br />
+        <div class="card">
+          <template>
+            <el-table :data="roles" style="width:100%">
+              <el-table-column prop="name" label="Nombre" width="180"> </el-table-column>
+              <el-table-column prop="status" label="Activo">
+                <template v-slot="{ row }">
+                  <a v-bind:href="row.url" target="_blank">
+                    <label class="custom-toggle">
+                      <input type="checkbox" v-on:change="toggle(row)" v-bind:checked="row.status" />
+                      <span class="custom-toggle-slider rounded-circle" data-label-off="No" data-label-on="Si"></span>
+                    </label>
+                  </a>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script>
+  import { Table, TableColumn, Upload, Button } from 'element-ui'
+  export default {
+    props: {
+      role: {}
+    },
+    components: {
+      [Table.name]: Table,
+      [TableColumn.name]: TableColumn
+    },
+    data() {
+      return {
+        data: {},
+        permisos: [],
+        checked: [],
+        roles: []
+      }
+    },
+    computed: {
+      selectedPermisos() {
+        return this.permisos.filter(event => event.status)
+      }
+    },
+    methods: {
+      toggle(row) {
+        row.status = !row.status
+        console.log(row.status)
+      }
+    },
+    created() {
+      this.$api.get('/role-permission').then(data => {
+        this.roles = data.roles
+        console.log(data, 'role-permission')
+      })
+    }
+  }
+  </script>
+  <style></style>
+-------ver Permisos Funcionando -------
+<template>
+  <div id="card" class="card card-profile">
+    <div class="card-header text-center border-0 pt-8 pt-md-2 pb-0 pb-md-2">
+      <div class="d-flex justify-content-between"></div>
+    </div>
+
+    <div class="card-body pt-0">
+      <h6 slot="header" class="modal-title" id="modal-title-default">
+        Rol :{{ roles.display_name }}
+        <!-- <button type="button" data-dismiss="modal1" aria-label="Close" class="close"><span>×</span></button> -->
+      </h6>
+      <br />
+      <h1 class="text-center">Permisos</h1>
+      <div class="col-auto">
+        <div>
+          <button @click="selectAll"></button>
+          <button @click="DeselectAll"></button>
+          <!--<input type="checkbox" @click="selectAll" /> -->
+          Marcar Todos
+        </div>
+        <!-- <h2>prueba {{ selectedPermisos }}</h2> -->
+        <div class="card">
+          <template>
+            <el-table :data="roles.permissions" style="width:100%">
+              <el-table-column prop="permission_id" label="Nombre" width="180"> </el-table-column>
+              <el-table-column prop="status" label="Activo">
+                <template v-slot="{ row }">
+                  <a v-bind:href="row.url" target="_blank">
+                    <label class="custom-toggle">
+                      <input type="checkbox" v-on:change="toggle(row)" v-bind:checked="row.status" />
+                      <span class="custom-toggle-slider rounded-circle" data-label-off="No" data-label-on="Si"></span>
+                    </label>
+                    {{ row.status }}
+                  </a>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+import { Table, TableColumn, Upload, Button } from 'element-ui'
+export default {
+  props: {
+    roles: {}
+  },
+  components: {
+    [Table.name]: Table,
+    [TableColumn.name]: TableColumn
+  },
+  data() {
+    return {
+      data: {},
+      permisos: [],
+      checked: []
+    }
+  },
+  computed: {
+    selectedPermisos() {
+      return this.roles.permissions.filter(event => event.status)
+    }
+  },
+  methods: {
+    toggle(row) {
+      row.status = !row.status
+      console.log(row.status)
+    },
+    selectAll() {
+      this.roles.permissions.forEach(event => (event.status = true))
+    },
+    DeselectAll() {
+      this.roles.permissions.forEach(event => (event.status = false))
+    }
+  },
+  created() {
+    this.$api.get('/permission').then(data => {
+      this.permisos = data
+      console.log(data, 'permission')
+    })
+  }
+}
+</script>
+<style></style>
+----------------PAGINACION -----------------------
+ <!-- <div>
+                <base-pagination :page-count="5" align="center"></base-pagination>
+              </div> -->
+              <!-- <b-pagination
+                v-model="currentPage"
+                :total-rows="rows"
+                :per-page="perPage"
+                aria-controls="my-table"
+              ></b-pagination> -->
+              <!--  <nav aria-label="Page navigation" class="text-center">
+                <ul class="pagination text-center">
+                  <li>
+                    <a href="#" aria-label="Previous" v-show="currentPage != 1" @click.prevent="currentPage -= 1">
+                      <span aria-hidden="true">Anterior</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      aria-label="Next"
+                      v-show="(currentPage * perPage) / roles.length < 1"
+                      @click.prevent="currentPage += 1"
+                    >
+                      <span aria-hidden="true">Siguiente</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+
+              <p class="mt-3">Pagina Actual: {{ currentPage }}</p> 
+              <b-pagination size="md" :total-rows="totalItems" v-model="currentPage" :per-page="perPage"></b-pagination>-->
+-------
+<!-- Search form
+              <form class="form-inline">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input
+                  class="form-control form-control-sm ml-2 w-70"
+                  type="text"
+                  placeholder="Buscar"
+                  aria-label="Buscar"
+                />
+              </form> -->
+      -------------------
+       <!-- Busqueda de Roles Por Nombre -->
+              <!-- <div id="list-countries">
+               <i class="fas fa-search" aria-hidden="true"></i>
+                <input
+                  id="input-search"
+                  type="text"
+                  class="form-control-sm"
+                  v-model="textSearch"
+                  placeholder="Buscar"
+                /> 
+              </div> -->
+              ----------funcion de Paginacion 
